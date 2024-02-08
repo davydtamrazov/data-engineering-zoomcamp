@@ -5,26 +5,20 @@ from pandas import DataFrame
 import pyarrow as pa
 import pyarrow.parquet as pq
 from os import path
+import os
 
 if 'data_exporter' not in globals():
     from mage_ai.data_preparation.decorators import data_exporter
 
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = "/home/src/dtc-de-course-411401-fbe71733ecc5.json"
+
+bucket_name = 'mage-zoomcamp-dtamrazov'
+table_name = 'daily-trips-green-taxi'
+
+root_path = f"{bucket_name}/{table_name}"
 
 @data_exporter
-def export_data_to_google_cloud_storage(df: DataFrame, **kwargs) -> None:
-    """
-    Template for exporting data to a Google Cloud Storage bucket.
-    Specify your configuration settings in 'io_config.yaml'.
-
-    Docs: https://docs.mage.ai/design/data-loading#googlecloudstorage
-    """
-    config_path = path.join(get_repo_path(), 'io_config.yaml')
-    config_profile = 'default'
-
-    bucket_name = 'green-taxi-dtamrazov'
-    table_name = 'daily-trips-green-taxi'
-
-    root_path = f"{bucket_name}/{table_name}"
+def export_data(df: DataFrame, *args, **kwargs) -> None:
 
     table = pa.Table.from_pandas(df)
 
@@ -36,9 +30,3 @@ def export_data_to_google_cloud_storage(df: DataFrame, **kwargs) -> None:
         partition_cols = ["lpep_pickup_date"],
         filesystem = gcs
     )
-
-    # GoogleCloudStorage.with_config(ConfigFileLoader(config_path, config_profile)).export(
-    #     df,
-    #     bucket_name,
-    #     object_key,
-    # )
